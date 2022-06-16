@@ -1,41 +1,40 @@
 const express = require('express');
-
-// You will need `users-model.js` and `posts-model.js` both
-
-const User = require('./users-model');
-const Post = require('../posts/posts-model');
-
-// The middleware functions also need to be required
-
 const {
   validateUserId,
   validateUser,
-  validatePost
-} = require('../middleware/middleware');
+  validatePost,
+
+} = require('../middleware/middleware')
+// You will need `users-model.js` and `posts-model.js` both
+
+const User = require('./users-model')
+const Post = require('../posts/posts-model')
+
+// The middleware functions also need to be required
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   // RETURN AN ARRAY WITH ALL THE USERS
   User.get()
     .then(users => {
-      res.json(users);
+      res.json(users)
     })
-    .catch(error => next(error));
+    .catch(next)
 });
 
 router.get('/:id', validateUserId, (req, res) => {
   // RETURN THE USER OBJECT
   // this needs a middleware to verify user id
-  res.status(200).json(req.user)
+  res.json(req.user)
 });
 
-router.post('/', validateUser, (req, res) => {
+router.post('/', validateUser, (req, res, next) => {
   // RETURN THE NEWLY CREATED USER OBJECT
   // this needs a middleware to check that the request body is valid
-  User.insert({name: req.name})
+  User.insert({ name: req.name})
     .then(newUser => {
-      res.status(201).json(newUser);
+      res.status(201).json(newUser)
     })
     .catch(next)
 });
@@ -71,25 +70,37 @@ router.get('/:id/posts', validateUserId, async (req, res, next) => {
   try {
     const result = await User.getUserPosts(req.params.id)
     res.json(result)
-  }catch(err) {
+  } catch (err) {
     next(err)
   }
 });
 
-router.post('/:id/posts', validateUserId, validatePost, async (req, res, next) => {
-  // RETURN THE NEWLY CREATED USER POST
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
-  try {
-    const result = await Post.insert({
-      user_id: req.params.id,
-      text: req.text,
-    })
+router.post(
+  '/:id/posts', 
+  validateUserId,
+  validatePost,
+  async (req, res, next) => {
+    // RETURN THE NEWLY CREATED USER POST
+    // this needs a middleware to verify user id
+    // and another middleware to check that the request body is valid
+    try {
+      const result = await Post.insert({
+        user_id: req.params.id,
+        text: req.text,
+      })
       res.status(201).json(result)
-  }catch(err){
-    next(err)
-  }
+    }catch(err){
+      next(err)
+    }
 });
+
+// router.use((err, req, res, next) =>{ // eslint-disable-line
+//   res.status(err.status || 500).json({
+//     customMessage: 'something is not working inside posts route',
+//     message: err.message,
+//     stack: err.stack,
+//   })
+// })
 
 // do not forget to export the router
-module.exports = router;
+module.exports = router

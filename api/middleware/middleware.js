@@ -1,7 +1,7 @@
-const User = require('../users/users-model');
+const User = require('../users/users-model')
 
 function logger(req, res, next) {
-  // DO YOUR MAGIC
+
   const timestamp = new Date().toLocaleString()
   const method = req.method
   const url = req.originalUrl
@@ -10,24 +10,22 @@ function logger(req, res, next) {
 }
 
 async function validateUserId(req, res, next) {
-  // DO YOUR MAGIC
-  try{
+  try {
     const user = await User.getById(req.params.id)
     if(!user) {
-      next({ status: 404, message: 'user not found'})
+      res.status(404).json( {message: 'user not found'} )
     }else{
       req.user = user
       next()
     }
-  }catch(err){
-    res.status(500).json({ message: 'problem finding server' })
+  } catch (err) {
+    res.status(500).json({message: 'problem finding user',})
   }
 }
 
 function validateUser(req, res, next) {
-  // DO YOUR MAGIC
-  const {name} = req.body;
-  if(!name || !name.trim()) {
+  const { name } = req.body
+  if (!name || !name.trim()) {
     res.status(400).json({ message: 'missing required name field' })
   }else{
     req.name = name.trim()
@@ -36,7 +34,7 @@ function validateUser(req, res, next) {
 }
 
 function validatePost(req, res, next) {
-  // DO YOUR MAGIC
+
   const { text } = req.body
   if (!text || !text.trim()) {
     res.status(400).json({ 
@@ -48,7 +46,7 @@ function validatePost(req, res, next) {
   }
 }
 
-// do not forget to expose these functions to other modules
+
 module.exports = {
   logger,
   validateUserId,
